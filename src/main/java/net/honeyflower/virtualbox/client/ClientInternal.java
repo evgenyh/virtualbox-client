@@ -41,7 +41,7 @@ public class ClientInternal {
 			vm = session.getMachine();
 			IProgress p = vm.saveState();
 			result = watchProgress(mgr, p, 10000);
-			
+			session.unlockMachine();
 		} catch (Exception e) {
 			log.warn("error during saving state", e);
 			
@@ -102,7 +102,7 @@ public class ClientInternal {
         while (!p.getCompleted()) {
             // process system event queue
             mgr.waitForEvents(0);
-            log.debug("processing {} operation, progress: {}", p.getDescription(), p.getPercent());
+            log.debug("processing task {} of {} operation, progress: {}", p.getId(), p.getDescription(), p.getPercent());
             // wait for completion of the task, but at most 200 msecs
             p.waitForCompletion(200);
             if (System.currentTimeMillis() >= end)

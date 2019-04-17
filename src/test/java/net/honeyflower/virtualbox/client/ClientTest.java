@@ -13,6 +13,8 @@ import ch.qos.logback.classic.Logger;
 public class ClientTest {
 	
 	private Client client;
+	private static final String testVMname = "windows 10";
+	private static final String testVMSnapshotName = "test snap";
 
 	@Before
 	public void setUp() throws Exception {
@@ -28,27 +30,27 @@ public class ClientTest {
 
 	@Test
 	public void testStartVM() {
-		client.startVM("windows 10");
+		client.startVM(testVMname);
 	}
 
 	@Test
 	public void testStopVM() {
-		client.stopVM("windows 10");
+		client.stopVM(testVMname);
 	}
 
 	@Test
 	public void testCreateSnapshotVM() {
-		fail("Not yet implemented");
+		client.createSnapshotVM(testVMname, testVMSnapshotName, "test snap description");
 	}
 
 	@Test
 	public void testGetVMSnapshots() {
-		fail("Not yet implemented");
+		client.getVMSnapshots(testVMname);
 	}
 
 	@Test
 	public void testRestoreSnapshot() {
-		fail("Not yet implemented");
+		client.restoreSnapshot(testVMname, testVMSnapshotName);
 	}
 
 }
