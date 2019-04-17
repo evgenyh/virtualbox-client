@@ -1,15 +1,20 @@
 package net.honeyflower.virtualbox.client;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ClientTest {
 	
 	private Client client;
@@ -29,28 +34,34 @@ public class ClientTest {
 	}
 
 	@Test
-	public void testStartVM() {
+	public void stage1_testStartVM() {
 		client.startVM(testVMname);
 	}
 
 	@Test
-	public void testStopVM() {
-		client.stopVM(testVMname);
-	}
-
-	@Test
-	public void testCreateSnapshotVM() {
+	public void stage2_testCreateSnapshotVM() {
 		client.createSnapshotVM(testVMname, testVMSnapshotName, "test snap description");
 	}
 
 	@Test
-	public void testGetVMSnapshots() {
-		client.getVMSnapshots(testVMname);
+	public void stage3_testGetVMSnapshots() {
+		List<String> snaps = client.getVMSnapshots(testVMname);
+		assertTrue(snaps!=null && ! snaps.isEmpty());
 	}
 
 	@Test
-	public void testRestoreSnapshot() {
+	public void stage4_testRestoreSnapshot() {
 		client.restoreSnapshot(testVMname, testVMSnapshotName);
+	}
+	
+	@Test
+	public void stage5_testDeleteSnapshot() {
+		client.deleteSnapshot(testVMname, testVMSnapshotName);
+	}
+	
+	@Test
+	public void stage6_testStopVM() {
+		client.stopVM(testVMname);
 	}
 
 }

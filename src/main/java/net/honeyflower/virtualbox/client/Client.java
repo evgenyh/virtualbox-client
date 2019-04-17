@@ -32,8 +32,14 @@ public class Client {
 	
 	public boolean restoreSnapshot(String vmName, String snapshotName) {
 		IMachine vm = client.findVM(vmName);
-		if (!client.stopVM(vm)) return false;
+		//if (!client.stopVM(vm)) return false;
 		return client.restoreSnapshot(client.findVM(vmName), client.findSnapshot(vm, snapshotName));
+	}
+	
+	public boolean deleteSnapshot(String vmName, String snapshotName) {
+		IMachine vm = client.findVM(vmName);
+		//if (!client.stopVM(vm)) return false;
+		return client.deleteSnapshot(client.findVM(vmName), client.findSnapshot(vm, snapshotName));
 	}
 
 	public void diconnect() {
