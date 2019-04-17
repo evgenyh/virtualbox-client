@@ -17,22 +17,36 @@ import lombok.extern.slf4j.Slf4j;
 public class ClientInternal {
 	
 	private VirtualBoxManager mgr;
+	private ISession session;
 	
 	
 	public ClientInternal(String username, String password, String url) {
 		mgr = VirtualBoxManager.createInstance(null);
 		mgr.connect(url, username, password);
+		session = mgr.getSessionObject();
 	}
 	
 	protected boolean startVM(IMachine vm) {
-		ISession session = mgr.getSessionObject();
 		IProgress p = vm.launchVMProcess(session, "headless", "");
-		return watchProgress(mgr, p, 10000);
+		boolean result = watchProgress(mgr, p, 10000);
+		session.unlockMachine();
+		return result;
+		//return 
 	}
 	
 	protected boolean stopVM(IMachine vm) {
-		IProgress p = vm.saveState();
-		return watchProgress(mgr, p, 10000);
+		boolean result = false;
+		try {
+			vm.lockMachine(session,  LockType.Shared);
+			vm = session.getMachine();
+			IProgress p = vm.saveState();
+			result = watchProgress(mgr, p, 10000);
+			
+		} catch (Exception e) {
+			log.warn("error during saving state", e);
+			
+		}
+		return result;
 	}
 	
 	protected boolean createSnapshotVM(IMachine vm, String snapshotName, String desciption) {
@@ -53,17 +67,22 @@ public class ClientInternal {
 		return vm.findSnapshot(snapshotName);
 	}
 	
-	public boolean restoreSnapshot(IMachine vm, ISnapshot snapshot) {
+	protected boolean restoreSnapshot(IMachine vm, ISnapshot snapshot) {
 		log.info("starting snapshot restore for vm {}", vm.getName());
-		log.debug("shutting down vm {}", vm.getName());
-        ISession session = mgr.getSessionObject();
-        vm.lockMachine(session,  LockType.Shared);
-        IConsole console = session.getConsole();
-        watchProgress(mgr, console.powerDown(), 10000);
-        session.unlockMachine();
+		shutdownVM(vm);
         log.debug("restoring snapshot {} for vm {}", snapshot.getName(), vm.getName());
 		IProgress p = vm.restoreSnapshot(snapshot);
 		return watchProgress(mgr, p, 10000);
+	}
+	
+	protected boolean shutdownVM(IMachine vm) {
+		boolean result = false;
+		log.debug("shutting down vm {}", vm.getName());
+        vm.lockMachine(session,  LockType.Shared);
+        IConsole console = session.getConsole();
+        result = watchProgress(mgr, console.powerDown(), 10000);
+        session.unlockMachine();
+        return result;
 	}
 
 	protected void diconnect() {
