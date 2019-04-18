@@ -36,6 +36,11 @@ public class Client {
 		return client.restoreSnapshot(client.findVM(vmName), client.findSnapshot(vm, snapshotName));
 	}
 	
+	public IMachine getVMInfo(String vmName) {
+		IMachine vm = client.findVM(vmName);
+		return client.getVMInfo(vm);
+	}
+	
 	public boolean deleteSnapshot(String vmName, String snapshotName) {
 		IMachine vm = client.findVM(vmName);
 		//if (!client.stopVM(vm)) return false;

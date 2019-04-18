@@ -122,6 +122,12 @@ public class ClientInternal {
 		return result;
 	}
 	
+	protected IMachine getVMInfo(IMachine vm) {
+        log.debug("getting info for vm '{}' : {}", vm.getName(), vm.getId());
+		
+		return vm;
+	}
+	
 	
 	protected boolean shutdownVM(IMachine vm) {
 		boolean result = false;
