@@ -14,12 +14,20 @@ import org.virtualbox_6_0.ISnapshot;
 import org.virtualbox_6_0.IVirtualBox;
 import org.virtualbox_6_0.LockType;
 import org.virtualbox_6_0.MachineState;
+import org.virtualbox_6_0.VBoxException;
 import org.virtualbox_6_0.VirtualBoxManager;
+import org.virtualbox_6_0.jaxws.InvalidObjectFaultMsg;
+
+import com.sun.xml.ws.client.ClientTransportException;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ClientInternal {
+	
+	private String username;
+	private String password;
+	private String url;
 	
 	/*static {
 		System.setProperty(BindingProviderProperties.CONNECT_TIMEOUT, "2000");
@@ -33,6 +41,20 @@ public class ClientInternal {
 	
 	public ClientInternal(String username, String password, String url) {
 		mgr = VirtualBoxManager.createInstance(null);
+		this.username=username;
+		this.password=password;
+		this.url=url;
+		init();
+		
+	}
+	
+	private void init() {
+		try {
+			mgr.disconnect();
+		} catch (Exception e) {
+			log.warn("was unable to disconnect : {}", e.getMessage());
+		}
+		
 		mgr.connect(url, username, password);
 		session = mgr.getSessionObject();
 	}
@@ -230,7 +252,24 @@ public class ClientInternal {
     }
 
 	protected IMachine findVM(String name) {
-		return mgr.getVBox().findMachine(name);
+		IMachine vm = null;
+		
+		try {
+			vm = mgr.getVBox().findMachine(name);
+		} catch (VBoxException e) {
+			log.warn(e.getMessage());
+			if (e.getCause()!=null && e.getCause() instanceof InvalidObjectFaultMsg) {
+				log.debug("got InvalidObjectFaultMsg, will try to reinit client");
+				init();
+				vm = mgr.getVBox().findMachine(name);
+			}
+		} catch (ClientTransportException e) {
+			log.warn(e.getMessage());
+			init();
+			vm = mgr.getVBox().findMachine(name);
+		}
+		
+		return vm;
 	}
 
 }
