@@ -13,6 +13,10 @@ public class Client {
 		client = new ClientInternal(username, password, url);
 	}
 	
+	protected String importVM(String configPath) {
+		return client.importVM(configPath);
+	}
+	
 	public boolean startVM(String name) throws VBoxException {
 		IMachine vm = client.findVM(name);
 		return client.startVM(vm);
@@ -20,6 +24,15 @@ public class Client {
 	
 	public boolean stopVM(String name) throws VBoxException {
 		return client.stopVM(client.findVM(name));
+	}
+	
+	/**
+	 * deletes vm defined by name and cleanups all non removable mediums
+	 * @param name
+	 * @return true if successfully deleted or false otherwise
+	 */
+	protected boolean deleteVM(String name) {
+		return client.deleteVM(client.findVM(name));
 	}
 	
 	public boolean createSnapshotVM(String vmName, String snapshotName, String desciption) throws VBoxException {
