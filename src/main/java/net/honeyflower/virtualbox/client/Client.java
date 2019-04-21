@@ -5,6 +5,10 @@ import java.util.List;
 import org.virtualbox_6_0.IMachine;
 import org.virtualbox_6_0.VBoxException;
 
+import net.honeyflower.virtualbox.client.model.RDPConnection;
+import net.honeyflower.virtualbox.client.model.Snapshot;
+import net.honeyflower.virtualbox.client.model.VMInfo;
+
 public class Client {
 	
 	private ClientInternal client;
@@ -50,9 +54,18 @@ public class Client {
 		return client.restoreSnapshot(client.findVM(vmName), client.findSnapshot(vm, snapshotName));
 	}
 	
-	public IMachine getVMInfo(String vmName) {
+	public VMInfo getVMInfo(String vmName) {
 		IMachine vm = client.findVM(vmName);
-		return client.getVMInfo(vm);
+		return VMInfo.builder()
+				.accessible(vm.getAccessible())
+				.rdp(RDPConnection.fromVRDPServer(vm.getVRDEServer()))
+				.currentSnapshot(Snapshot.fromISnapshot(vm.getCurrentSnapshot()))
+				.autostartEnabled(vm.getAutostartEnabled())
+				.memorySize(vm.getMemorySize())
+				.name(vm.getName())
+				.cpuCount(vm.getCPUCount())
+				.state(vm.getState())
+				.build();
 	}
 	
 	public boolean deleteSnapshot(String vmName, String snapshotName) {

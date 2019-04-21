@@ -1,18 +1,23 @@
 package net.honeyflower.virtualbox.client.model;
 
-import org.virtualbox_6_0.IVRDEServer;
+import org.virtualbox_6_0.MachineState;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Builder
-@Data
+@Getter
+@Setter
 public class VMInfo {
 	
 	private String name;
-    private long ram;
-    private boolean hwvirtEnabled;
-    private String os;
-    private IVRDEServer rdp;
-
+    private long memorySize;
+    private long cpuCount;
+    private boolean accessible;
+    private boolean autostartEnabled;
+    private Snapshot currentSnapshot;
+    private String ostypeId;
+    private RDPConnection rdp;
+    private MachineState state;
 }
