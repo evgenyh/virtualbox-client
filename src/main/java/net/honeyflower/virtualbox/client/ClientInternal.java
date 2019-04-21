@@ -3,12 +3,15 @@ package net.honeyflower.virtualbox.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.virtualbox_6_0.CleanupMode;
 import org.virtualbox_6_0.Holder;
 import org.virtualbox_6_0.IConsole;
 import org.virtualbox_6_0.IMachine;
+import org.virtualbox_6_0.IMedium;
 import org.virtualbox_6_0.IProgress;
 import org.virtualbox_6_0.ISession;
 import org.virtualbox_6_0.ISnapshot;
+import org.virtualbox_6_0.IVirtualBox;
 import org.virtualbox_6_0.LockType;
 import org.virtualbox_6_0.MachineState;
 import org.virtualbox_6_0.VirtualBoxManager;
@@ -26,6 +29,33 @@ public class ClientInternal {
 		mgr = VirtualBoxManager.createInstance(null);
 		mgr.connect(url, username, password);
 		session = mgr.getSessionObject();
+	}
+	
+	/**
+	 * importing vm from predefined location
+	 * @param configPath
+	 * @return uuid of imported vm
+	 */
+	protected String importVM(String configPath) {
+		IVirtualBox vbox = mgr.getVBox();
+		IMachine vm = vbox.openMachine(configPath);
+		vbox.registerMachine(vm);
+		
+		return vm.getId();
+	}
+	
+	protected boolean deleteVM(IMachine vm) {
+		
+		log.debug("about to start vm '{}' deletetion", vm.getId());
+		shutdownVM(vm);
+		List<IMedium> mediums = vm.unregister(CleanupMode.DetachAllReturnHardDisksOnly);
+		log.info("vm '{}' unregistered", vm.getId());
+		log.debug("about to delete the following mediums : {} ", mediums);
+		
+		IProgress p = vm.deleteConfig(mediums);
+		boolean result = watchProgress(mgr, p, 10000);
+		log.debug("finished vm '{}' deletetion", vm.getId());
+		return result;
 	}
 	
 	protected boolean startVM(IMachine vm) {
