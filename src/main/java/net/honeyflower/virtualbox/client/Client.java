@@ -10,6 +10,7 @@ public class Client {
 	private ClientInternal client;
 	
 	public Client(String username, String password, String url) {
+		if (username == null || password==null || url == null) throw new IllegalArgumentException("all parameters should not be null");
 		client = new ClientInternal(username, password, url);
 	}
 	
