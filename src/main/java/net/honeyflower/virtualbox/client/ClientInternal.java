@@ -67,11 +67,24 @@ public class ClientInternal {
 	protected boolean startVM(IMachine vm) {
 		//vm.lockMachine(session,  LockType.Write);
 		//vm = session.getMachine();
-		IProgress p = vm.launchVMProcess(session, "headless", "");
-		boolean result = watchProgress(mgr, p, 10000);
-		session.unlockMachine();
+		boolean result = false;
+		MachineState state = vm.getState();
+		switch (state) {
+		case Aborted:
+		case Paused:
+		case PoweredOff:
+		case Saved:
+			IProgress p = vm.launchVMProcess(session, "headless", "");
+			result = watchProgress(mgr, p, 10000);
+			session.unlockMachine();
+			break;
+
+		default:
+			result = true;
+			break;
+		}
+		
 		return result;
-		//return 
 	}
 	
 	/**
