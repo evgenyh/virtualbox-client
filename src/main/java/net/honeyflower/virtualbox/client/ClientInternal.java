@@ -21,6 +21,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ClientInternal {
 	
+	/*static {
+		System.setProperty(BindingProviderProperties.CONNECT_TIMEOUT, "2000");
+		System.setProperty(BindingProviderProperties.REQUEST_TIMEOUT, "5000");
+		
+	}*/
+	
 	private VirtualBoxManager mgr;
 	private ISession session;
 	
