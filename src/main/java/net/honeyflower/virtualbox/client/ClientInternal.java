@@ -263,7 +263,11 @@ public class ClientInternal {
 			if (e.getCause()!=null && e.getCause() instanceof InvalidObjectFaultMsg) {
 				log.debug("got InvalidObjectFaultMsg, will try to reinit client");
 				init();
-				vm = mgr.getVBox().findMachine(name);
+				try {
+					vm = mgr.getVBox().findMachine(name);
+				} catch (VBoxException e2) {
+					log.warn(e.getMessage());
+				}
 			}
 		} catch (ClientTransportException e) {
 			log.warn(e.getMessage());
