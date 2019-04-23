@@ -1,5 +1,23 @@
 package net.honeyflower.virtualbox.client;
 
+/* $Id$ */
+/*! file
+ * Small sample/testcase which demonstrates that the same source code can
+ * be used to connect to the webservice and (XP)COM APIs.
+ */
+
+/*
+ * Copyright (C) 2010-2019 Oracle Corporation
+ *
+ * This file is part of VirtualBox Open Source Edition (OSE), as
+ * available from http://www.virtualbox.org. This file is free software;
+ * you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License (GPL) as published by the Free Software
+ * Foundation, in version 2 as it comes in the "COPYING" file of the
+ * VirtualBox OSE distribution. VirtualBox OSE is distributed in the
+ * hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
+ */
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -142,7 +160,7 @@ public class TestVBox
         System.out.println("\nAttempting to start VM '" + name + "'");
 
         ISession session = mgr.getSessionObject();
-        IProgress p = m.launchVMProcess(session, "headless", "");
+        IProgress p = m.launchVMProcess(session, "gui", "");
         progressBar(mgr, p, 10000);
         session.unlockMachine();
         // process system event queue
@@ -215,19 +233,35 @@ public class TestVBox
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         VirtualBoxManager mgr = VirtualBoxManager.createInstance(null);
 
-        String  url = "http://192.168.2.16:18083";
-        String  user = "vbox";
-        String  passwd = "vbox";
+        boolean ws = false;
+        String  url = null;
+        String  user = null;
+        String  passwd = null;
 
+        for (int i = 0; i < args.length; i++)
+        {
+            if (args[i].equals("-w"))
+                ws = true;
+            else if (args[i].equals("-url"))
+                url = args[++i];
+            else if (args[i].equals("-user"))
+                user = args[++i];
+            else if (args[i].equals("-passwd"))
+                passwd = args[++i];
+        }
 
-        try {
-            mgr.connect(url, user, passwd);
-        } catch (VBoxException e) {
-            e.printStackTrace();
-            System.out.println("Cannot connect, start webserver first!");
+        if (ws)
+        {
+            try {
+                mgr.connect(url, user, passwd);
+            } catch (VBoxException e) {
+                e.printStackTrace();
+                System.out.println("Cannot connect, start webserver first!");
+            }
         }
 
         try
@@ -263,10 +297,13 @@ public class TestVBox
 
         // process system event queue
         mgr.waitForEvents(0);
-        try {
-            mgr.disconnect();
-        } catch (VBoxException e) {
-            e.printStackTrace();
+        if (ws)
+        {
+            try {
+                mgr.disconnect();
+            } catch (VBoxException e) {
+                e.printStackTrace();
+            }
         }
 
         mgr.cleanup();

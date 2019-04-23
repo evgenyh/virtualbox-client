@@ -1,20 +1,25 @@
  package net.honeyflower.virtualbox.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.virtualbox_6_0.CleanupMode;
 import org.virtualbox_6_0.Holder;
 import org.virtualbox_6_0.IConsole;
+import org.virtualbox_6_0.IEventListener;
+import org.virtualbox_6_0.IEventSource;
 import org.virtualbox_6_0.IMachine;
 import org.virtualbox_6_0.IMedium;
 import org.virtualbox_6_0.IProgress;
 import org.virtualbox_6_0.ISession;
 import org.virtualbox_6_0.ISnapshot;
 import org.virtualbox_6_0.ISystemProperties;
+import org.virtualbox_6_0.IVRDEServerInfo;
 import org.virtualbox_6_0.IVirtualBox;
 import org.virtualbox_6_0.LockType;
 import org.virtualbox_6_0.MachineState;
+import org.virtualbox_6_0.VBoxEventType;
 import org.virtualbox_6_0.VBoxException;
 import org.virtualbox_6_0.VirtualBoxManager;
 import org.virtualbox_6_0.jaxws.InvalidObjectFaultMsg;
@@ -39,6 +44,7 @@ public class ClientInternal {
 	
 	private VirtualBoxManager mgr;
 	private ISession session;
+	private VMEventProcessor eventProcessor;
 	
 	
 	public ClientInternal(String username, String password, String url) {
@@ -58,9 +64,20 @@ public class ClientInternal {
 		}
 		
 		mgr.connect(url, username, password);
+		registerEventListener(mgr, mgr.getVBox().getEventSource());
 		session = mgr.getSessionObject();
 	}
 	
+	private void registerEventListener(VirtualBoxManager mgr, IEventSource es) {
+		// active mode for Java doesn't fully work yet, and using passive
+        // is more portable (the only mode for MSCOM and WS) and thus generally
+        // recommended
+        IEventListener listener = es.createListener();
+        es.registerListener(listener, Arrays.asList(VBoxEventType.Any), false);
+        this.eventProcessor=new VMEventProcessor(es, listener);
+		this.eventProcessor.start();
+	}
+
 	protected String importVM(String name) {
 		IMachine vm = findVM(name);
 		if (vm!=null) return vm.getId();
@@ -276,6 +293,34 @@ public class ClientInternal {
 		}
 		
 		return vm;
+	}
+	
+	protected IVRDEServerInfo getRDPinfo(IMachine vm) {
+		IVRDEServerInfo info = null;
+		try {
+			vm.lockMachine(session, LockType.Shared);
+	        vm = session.getMachine();
+	        MachineState state = vm.getState();
+			switch (state) {
+			case Running:
+				try {
+		        	if (session.getConsole()!=null)
+		        		info = session.getConsole().getVRDEServerInfo();
+				} catch (Exception e) {
+					log.error("",e);
+				}
+				break;
+
+			default:
+				break;
+			}
+		} catch (Exception e) {
+			log.error("",e);
+		} finally {
+			session.unlockMachine();
+		}
+        
+        return info;
 	}
 	
 	protected String getProperty(SystemPropertyKey key) {

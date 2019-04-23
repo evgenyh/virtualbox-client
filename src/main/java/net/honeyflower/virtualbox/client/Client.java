@@ -63,7 +63,7 @@ public class Client {
 		IMachine vm = client.findVM(vmName);
 		return VMInfo.builder()
 				.accessible(vm.getAccessible())
-				.rdp(RDPConnection.fromVRDPServer(vm.getVRDEServer()))
+				.rdp(RDPConnection.fromVRDPServer(client.getRDPinfo(vm)))
 				.currentSnapshot(Snapshot.fromISnapshot(vm.getCurrentSnapshot()))
 				.autostartEnabled(vm.getAutostartEnabled())
 				.memorySize(vm.getMemorySize())
