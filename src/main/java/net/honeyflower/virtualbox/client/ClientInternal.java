@@ -11,6 +11,7 @@ import org.virtualbox_6_0.IMedium;
 import org.virtualbox_6_0.IProgress;
 import org.virtualbox_6_0.ISession;
 import org.virtualbox_6_0.ISnapshot;
+import org.virtualbox_6_0.ISystemProperties;
 import org.virtualbox_6_0.IVirtualBox;
 import org.virtualbox_6_0.LockType;
 import org.virtualbox_6_0.MachineState;
@@ -21,6 +22,7 @@ import org.virtualbox_6_0.jaxws.InvalidObjectFaultMsg;
 import com.sun.xml.ws.client.ClientTransportException;
 
 import lombok.extern.slf4j.Slf4j;
+import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
 
 @Slf4j
 public class ClientInternal {
@@ -59,12 +61,19 @@ public class ClientInternal {
 		session = mgr.getSessionObject();
 	}
 	
+	protected String importVM(String name) {
+		IMachine vm = findVM(name);
+		if (vm!=null) return vm.getId();
+
+		return importVMByConfig(getProperty(SystemPropertyKey.DEFAULT_VMS_FOLDER) + '/' + name + '/' + name + ".vbox");
+	}
+	
 	/**
 	 * importing vm from predefined location
 	 * @param configPath
 	 * @return uuid of imported vm
 	 */
-	protected String importVM(String configPath) {
+	protected String importVMByConfig(String configPath) {
 		IVirtualBox vbox = mgr.getVBox();
 		IMachine vm = vbox.openMachine(configPath);
 		vbox.registerMachine(vm);
@@ -263,6 +272,32 @@ public class ClientInternal {
 		}
 		
 		return vm;
+	}
+	
+	protected String getProperty(SystemPropertyKey key) {
+		String value = null;
+		switch (key) {
+		case DEFAULT_VMS_FOLDER:
+			value = mgr.getVBox().getSystemProperties().getDefaultMachineFolder();
+			break;
+
+		default:
+			break;
+		}
+		
+		return value;
+	}
+	
+	protected void setProperty(SystemPropertyKey key, String value) {
+		ISystemProperties properties = mgr.getVBox().getSystemProperties();
+		switch (key) {
+		case DEFAULT_VMS_FOLDER:
+			properties.setDefaultMachineFolder(value);
+			break;
+
+		default:
+			break;
+		}
 	}
 
 }

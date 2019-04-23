@@ -5,6 +5,7 @@ import java.util.List;
 import org.virtualbox_6_0.IMachine;
 import org.virtualbox_6_0.VBoxException;
 
+import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
 import net.honeyflower.virtualbox.client.model.RDPConnection;
 import net.honeyflower.virtualbox.client.model.Snapshot;
 import net.honeyflower.virtualbox.client.model.VMInfo;
@@ -18,8 +19,12 @@ public class Client {
 		client = new ClientInternal(username, password, url);
 	}
 	
-	protected String importVM(String configPath) {
-		return client.importVM(configPath);
+	protected String importVMByConfig(String configPath) {
+		return client.importVMByConfig(configPath);
+	}
+	
+	public String importVM(String name) {
+		return client.importVM(name);
 	}
 	
 	public boolean startVM(String name) throws VBoxException {
@@ -36,7 +41,7 @@ public class Client {
 	 * @param name
 	 * @return true if successfully deleted or false otherwise
 	 */
-	protected boolean deleteVM(String name) {
+	public boolean deleteVM(String name) {
 		return client.deleteVM(client.findVM(name));
 	}
 	
@@ -76,6 +81,10 @@ public class Client {
 
 	public void diconnect() {
 		client.diconnect();
+	}
+	
+	public String getProperty(SystemPropertyKey key) {
+		return client.getProperty(key);
 	}
 
 }
