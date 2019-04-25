@@ -1,5 +1,7 @@
 package net.honeyflower.virtualbox.client.model;
 
+import java.util.List;
+
 import org.virtualbox_6_0.MachineState;
 
 import lombok.Builder;
@@ -11,6 +13,7 @@ import lombok.Setter;
 @Setter
 public class VMInfo {
 	
+	private String id;
 	private String name;
     private long memorySize;
     private long cpuCount;
@@ -20,4 +23,5 @@ public class VMInfo {
     private String ostypeId;
     private RDPConnection rdp;
     private MachineState state;
+    private List<NetworkCard> nics;
 }

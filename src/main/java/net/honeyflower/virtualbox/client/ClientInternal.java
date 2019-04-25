@@ -28,6 +28,7 @@ import com.sun.xml.ws.client.ClientTransportException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
+import net.honeyflower.virtualbox.client.constants.VMPropertyKey;
 
 @Slf4j
 public class ClientInternal {
@@ -323,13 +324,18 @@ public class ClientInternal {
         return info;
 	}
 	
+	/**
+	 * 
+	 * @param key enum defined accordingly to {@link ISystemProperties}
+	 * @param definer if required for getting specific property for key
+	 * @return
+	 */
 	protected String getProperty(SystemPropertyKey key) {
 		String value = null;
 		switch (key) {
 		case DEFAULT_VMS_FOLDER:
 			value = mgr.getVBox().getSystemProperties().getDefaultMachineFolder();
 			break;
-
 		default:
 			break;
 		}
@@ -347,6 +353,28 @@ public class ClientInternal {
 		default:
 			break;
 		}
+	}
+	
+	protected Object getVMProperty(VMPropertyKey key, IMachine vm, Object definer) {
+		Object value = null;
+		switch (key) {
+		case MAX_VM_NETWORK_ADAPTERS:
+			value = mgr.getVBox().getSystemProperties().getMaxNetworkAdapters(vm.getChipsetType()).intValue();
+			break;
+		case GUEST_NIC_IP:
+			value = vm.getGuestPropertyValue("/VirtualBox/GuestInfo/Net/" + definer +"/V4/IP");
+			break;
+		case GUEST_NIC_MASK:
+			value = vm.getGuestPropertyValue("/VirtualBox/GuestInfo/Net/" + definer +"/V4/Netmask");
+			break;
+		case GUEST_NIC_BROADCAST:
+			value = vm.getGuestPropertyValue("/VirtualBox/GuestInfo/Net/" + definer +"/V4/Broadcast");
+			break;
+		default:
+			break;
+		}
+		
+		return value;
 	}
 
 }

@@ -38,7 +38,8 @@ public final class VMEventProcessor extends Thread{
 				try {
 					throw e.getCause();
 				} catch (InvalidObjectFaultMsg ei) {
-					log.warn("got: {}", ei.getMessage());
+					log.warn("got: " + ei.getMessage(), ei);
+					source.releaseRemote();
 					
 				} catch (RuntimeFaultMsg rf) {
 					log.warn("got RuntimeFaultMsg: {}, will stop listener", rf.getMessage());
