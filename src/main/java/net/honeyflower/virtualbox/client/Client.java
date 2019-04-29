@@ -1,16 +1,13 @@
 package net.honeyflower.virtualbox.client;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.virtualbox_6_0.IMachine;
 import org.virtualbox_6_0.VBoxException;
 
 import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
-import net.honeyflower.virtualbox.client.constants.VMPropertyKey;
-import net.honeyflower.virtualbox.client.model.NetworkCard;
-import net.honeyflower.virtualbox.client.model.RDPConnection;
-import net.honeyflower.virtualbox.client.model.Snapshot;
 import net.honeyflower.virtualbox.client.model.VMInfo;
 
 public class Client {
@@ -65,29 +62,17 @@ public class Client {
 	public VMInfo getVMInfo(String vmName) {
 		IMachine vm = client.findVM(vmName);
 		
-		int maxNics = (int) client.getVMProperty(VMPropertyKey.MAX_VM_NETWORK_ADAPTERS, vm, null);
-		if (maxNics>10) maxNics=10;
-		List<NetworkCard> cards = new ArrayList<NetworkCard>(maxNics);
-		for (int x = 0; x< maxNics;x++) {
-			NetworkCard card = NetworkCard.fromINetworkAdapter(vm.getNetworkAdapter((long)x));
-			if (card==null) continue;
-			card.setIp((String) client.getVMProperty(VMPropertyKey.GUEST_NIC_IP, vm, x));
-			card.setMask((String) client.getVMProperty(VMPropertyKey.GUEST_NIC_MASK, vm, x));
-			cards.add(card);
-		}
+		return client.getVMInfo(vm);
+	}
+	
+	
+	public List<VMInfo> getVMs() {
 		
-		return VMInfo.builder()
-				.id(vm.getId())
-				.accessible(vm.getAccessible())
-				.rdp(RDPConnection.fromVRDPServer(client.getRDPinfo(vm)))
-				.currentSnapshot(Snapshot.fromISnapshot(vm.getCurrentSnapshot()))
-				.autostartEnabled(vm.getAutostartEnabled())
-				.memorySize(vm.getMemorySize())
-				.name(vm.getName())
-				.cpuCount(vm.getCPUCount())
-				.state(vm.getState())
-				.nics(cards)
-				.build();
+		return client.getVMs()
+				.stream()
+				.filter(Objects::nonNull)
+				.map(client::getVMInfo)
+				.collect(Collectors.toList());
 	}
 	
 	public boolean deleteSnapshot(String vmName, String snapshotName) {

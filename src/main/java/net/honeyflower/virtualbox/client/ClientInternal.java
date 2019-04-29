@@ -29,6 +29,10 @@ import com.sun.xml.ws.client.ClientTransportException;
 import lombok.extern.slf4j.Slf4j;
 import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
 import net.honeyflower.virtualbox.client.constants.VMPropertyKey;
+import net.honeyflower.virtualbox.client.model.NetworkCard;
+import net.honeyflower.virtualbox.client.model.RDPConnection;
+import net.honeyflower.virtualbox.client.model.Snapshot;
+import net.honeyflower.virtualbox.client.model.VMInfo;
 
 @Slf4j
 public class ClientInternal {
@@ -375,6 +379,37 @@ public class ClientInternal {
 		}
 		
 		return value;
+	}
+
+	public List<IMachine> getVMs() {
+		return mgr.getVBox().getMachines();
+	}
+	
+	public VMInfo getVMInfo(IMachine vm) {
+		
+		int maxNics = (int) getVMProperty(VMPropertyKey.MAX_VM_NETWORK_ADAPTERS, vm, null);
+		if (maxNics>10) maxNics=10;
+		List<NetworkCard> cards = new ArrayList<NetworkCard>(maxNics);
+		for (int x = 0; x< maxNics;x++) {
+			NetworkCard card = NetworkCard.fromINetworkAdapter(vm.getNetworkAdapter((long)x));
+			if (card==null) continue;
+			card.setIp((String) getVMProperty(VMPropertyKey.GUEST_NIC_IP, vm, x));
+			card.setMask((String) getVMProperty(VMPropertyKey.GUEST_NIC_MASK, vm, x));
+			cards.add(card);
+		}
+		
+		return VMInfo.builder()
+				.id(vm.getId())
+				.accessible(vm.getAccessible())
+				.rdp(RDPConnection.fromVRDPServer(getRDPinfo(vm)))
+				.currentSnapshot(Snapshot.fromISnapshot(vm.getCurrentSnapshot()))
+				.autostartEnabled(vm.getAutostartEnabled())
+				.memorySize(vm.getMemorySize())
+				.name(vm.getName())
+				.cpuCount(vm.getCPUCount())
+				.state(vm.getState())
+				.nics(cards)
+				.build();
 	}
 
 }
