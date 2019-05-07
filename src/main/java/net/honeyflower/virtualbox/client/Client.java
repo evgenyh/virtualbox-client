@@ -2,21 +2,47 @@ package net.honeyflower.virtualbox.client;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Timer;
 import java.util.stream.Collectors;
 
 import org.virtualbox_6_0.IMachine;
 import org.virtualbox_6_0.VBoxException;
 
+import lombok.extern.slf4j.Slf4j;
 import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
+import net.honeyflower.virtualbox.client.internal.ReconnectTask;
 import net.honeyflower.virtualbox.client.model.VMInfo;
 
+@Slf4j
 public class Client {
 	
 	private ClientInternal client;
 	
 	public Client(String username, String password, String url) {
+		this(username, password, url, false);
+	}
+	
+	/**
+	 * 
+	 * @param username
+	 * @param password
+	 * @param url
+	 * @param reconnect will try to reconnect if connection was not successful
+	 */
+	public Client(String username, String password, String url, boolean reconnect) {
 		if (username == null || password==null || url == null) throw new IllegalArgumentException("all parameters should not be null");
 		client = new ClientInternal(username, password, url);
+		try {
+			client.init();
+		} catch (Exception e) {
+			if (reconnect) {
+				log.warn("connection attempt was unsuccesfull, we got : {},  scheduling reconnection", e.getMessage());
+				new ReconnectTask(this, new Timer("vbox_reconnector_" + System.currentTimeMillis())).start();
+			} else {
+				throw e;
+			}
+		}
+		
 	}
 	
 	protected String importVMByConfig(String configPath) {
@@ -85,8 +111,20 @@ public class Client {
 		client.diconnect();
 	}
 	
+	public void connect() {
+		reconnect();
+	}
+	
+	public void reconnect() {
+		client.init();
+	}
+	
 	public String getProperty(SystemPropertyKey key) {
 		return client.getProperty(key);
+	}
+
+	public boolean isConnected() {
+		return client.isConnected();
 	}
 
 }

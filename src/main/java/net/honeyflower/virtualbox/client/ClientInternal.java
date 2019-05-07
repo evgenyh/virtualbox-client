@@ -57,11 +57,10 @@ public class ClientInternal {
 		this.username=username;
 		this.password=password;
 		this.url=url;
-		init();
 		
 	}
 	
-	private void init() {
+	protected void init() {
 		try {
 			mgr.disconnect();
 		} catch (Exception e) {
@@ -410,6 +409,10 @@ public class ClientInternal {
 				.state(vm.getState())
 				.nics(cards)
 				.build();
+	}
+
+	public boolean isConnected() {
+		return mgr.getVBox()==null;
 	}
 
 }
