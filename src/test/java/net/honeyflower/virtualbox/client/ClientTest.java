@@ -26,6 +26,7 @@ public class ClientTest {
 		Logger rootLogger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 		rootLogger.setLevel(Level.ALL);
 		client = new Client("vbox", "vbox", "http://192.168.2.16:18083");
+		client.connect();
 	}
 
 	@After
