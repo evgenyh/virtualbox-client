@@ -21,7 +21,10 @@ public class ReconnectTask extends TimerTask {
 
 	@Override
 	public void run() {
-		if (client.isConnected()) return;
+		if (client.isConnected()) {
+			timer.cancel();
+			return;
+		}
 		
 		log.info("reconnection attempt {}", iteration);
 		
@@ -38,7 +41,10 @@ public class ReconnectTask extends TimerTask {
 				}
 			}
 		} finally {
-			iteration++;
+			if (client.isConnected()) {
+				timer.cancel();
+			}
+			else iteration++;
 		}
 
 	}
