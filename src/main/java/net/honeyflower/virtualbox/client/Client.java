@@ -20,6 +20,7 @@ public class Client {
 	
 	public Client(String username, String password, String url) {
 		this(username, password, url, false);
+		client.init();
 	}
 	
 	/**
@@ -109,10 +110,6 @@ public class Client {
 
 	public void diconnect() {
 		client.diconnect();
-	}
-	
-	public void connect() {
-		reconnect();
 	}
 	
 	public void reconnect() {

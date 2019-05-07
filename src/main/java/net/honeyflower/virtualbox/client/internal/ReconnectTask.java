@@ -1,8 +1,9 @@
 package net.honeyflower.virtualbox.client.internal;
 
-import java.net.ConnectException;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.xml.ws.WebServiceException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.honeyflower.virtualbox.client.Client;
@@ -15,8 +16,13 @@ public class ReconnectTask extends TimerTask {
 	private int iteration;
 
 	public ReconnectTask(Client client, Timer timer) {
+		this(client, timer, 1);
+	}
+	
+	private ReconnectTask(Client client, Timer timer, int iteration) {
 		this.client = client;
 		this.timer = timer;
+		this.iteration=iteration;
 	}
 
 	@Override
@@ -33,20 +39,32 @@ public class ReconnectTask extends TimerTask {
 		} catch (Exception e) {
 			log.warn("got error on reconnect : {}", e.getMessage());
 			if (e.getCause()!=null) {
-				if (e.getCause() instanceof ConnectException) {
-					int delay =iteration*2000;
-					if (delay>60000) delay=60000;
-					log.warn("got {}, scheduling reconnection in {} secs", e.getMessage(), delay/1000);
-					timer.schedule(this, delay);
+				if (e.getCause() instanceof WebServiceException) {
+					log.warn("got {}, will schedule reconnection", e.getCause().getMessage());
 				}
 			}
 		} finally {
 			if (client.isConnected()) {
+				log.info("connection established, cancelling tasks");
 				timer.cancel();
 			}
-			else iteration++;
+			else {
+				iteration++;
+				int delay =iteration*iteration;
+				if (delay>60) delay=60;
+				log.warn("connection unsuccesfull, scheduling reconnection in {} secs", delay);
+				timer.schedule(this.cloned(), delay*1000);
+			}
 		}
 
+	}
+	
+	/**
+	 * since {@link TimerTask} is a once shot piece, we do clone it for each reschedule attempt
+	 * @return
+	 */
+	private ReconnectTask cloned() {
+		return new ReconnectTask(client, timer, iteration);
 	}
 
 	public void start() {

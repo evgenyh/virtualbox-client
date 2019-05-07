@@ -412,7 +412,7 @@ public class ClientInternal {
 	}
 
 	public boolean isConnected() {
-		return mgr.getVBox()==null;
+		return mgr.getVBox()!=null;
 	}
 
 }
