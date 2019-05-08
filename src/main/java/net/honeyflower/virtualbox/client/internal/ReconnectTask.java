@@ -15,13 +15,19 @@ public class ReconnectTask extends TimerTask {
 	private Timer timer;
 	private int iteration;
 
-	public ReconnectTask(Client client, Timer timer) {
-		this(client, timer, 1);
+	public ReconnectTask(Client client) {
+		this(client, 1);
+	}
+	
+	private ReconnectTask(Client client, int iteration) {
+		
+		this(client, new Timer("vbox_reconnector_" + System.currentTimeMillis(), true), 1);
 	}
 	
 	private ReconnectTask(Client client, Timer timer, int iteration) {
-		this.client = client;
 		this.timer = timer;
+		
+		this.client = client;
 		this.iteration=iteration;
 	}
 

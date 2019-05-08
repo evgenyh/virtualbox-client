@@ -38,7 +38,7 @@ public class Client {
 		} catch (Exception e) {
 			if (reconnect) {
 				log.warn("connection attempt was unsuccesfull, we got : {},  scheduling reconnection", e.getMessage());
-				new ReconnectTask(this, new Timer("vbox_reconnector_" + System.currentTimeMillis())).start();
+				new ReconnectTask(this).start();
 			} else {
 				throw e;
 			}
