@@ -3,26 +3,32 @@ package net.honeyflower.virtualbox.client;
 import org.virtualbox_6_0.IEvent;
 import org.virtualbox_6_0.IEventListener;
 import org.virtualbox_6_0.IEventSource;
-import org.virtualbox_6_0.IMachineStateChangedEvent;
-import org.virtualbox_6_0.VBoxEventType;
 import org.virtualbox_6_0.VBoxException;
 import org.virtualbox_6_0.jaxws.InvalidObjectFaultMsg;
 import org.virtualbox_6_0.jaxws.RuntimeFaultMsg;
 
 import lombok.extern.slf4j.Slf4j;
+import net.honeyflower.virtualbox.client.event.EventProcessor;
+import net.honeyflower.virtualbox.client.event.NoOpEventProcessor;
 
 @Slf4j
-public final class VMEventProcessor extends Thread{
+class VMEventListener extends Thread {
 	
 	private static final String _THREAD_NAME="vbox_event_processor";
 	private IEventListener listener;
 	private IEventSource source;
 	private boolean running = true;
+	private EventProcessor eventProcessor;
 	
-	public VMEventProcessor(IEventSource source, IEventListener listener) {
+	public VMEventListener (IEventSource source, IEventListener listener) {
+		this(source, listener, new NoOpEventProcessor());
+	}
+	
+	public VMEventListener(IEventSource source, IEventListener listener, EventProcessor eventProcessor) {
 		this.setName(_THREAD_NAME);
 		this.listener=listener;
 		this.source=source;
+		setEventProcessor(eventProcessor);
 	}
 
 	@Override
@@ -55,21 +61,31 @@ public final class VMEventProcessor extends Thread{
 		}
 	}
 
-	public void processEvent(IEvent ev) {
+	/*private void processEvent(IEvent ev) {
         log.debug("got event: {} , of type {}", ev, ev.getType());
         VBoxEventType type = ev.getType();
-        switch (type)
-        {
+        switch (type) {
             case OnMachineStateChanged:
-            {
                 IMachineStateChangedEvent mcse = IMachineStateChangedEvent.queryInterface(ev);
                 if (mcse == null)
                     log.warn("Cannot query an interface");
                 else
                     log.info("mid=" + mcse.getMachineId());
                 break;
-            }
+            default:
+    			break;
         }
-    }
+    }*/
+
+	private void processEvent(IEvent ev) {
+		eventProcessor.processEvent(ev);
+		
+	}
+
+	public void setEventProcessor(EventProcessor eventProcessor) {
+		if (eventProcessor==null) eventProcessor=new NoOpEventProcessor();
+		this.eventProcessor = eventProcessor;
+	}
+	
 
 }

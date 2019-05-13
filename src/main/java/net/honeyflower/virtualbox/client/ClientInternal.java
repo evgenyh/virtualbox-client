@@ -29,6 +29,7 @@ import com.sun.xml.ws.client.ClientTransportException;
 import lombok.extern.slf4j.Slf4j;
 import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
 import net.honeyflower.virtualbox.client.constants.VMPropertyKey;
+import net.honeyflower.virtualbox.client.event.EventProcessor;
 import net.honeyflower.virtualbox.client.model.NetworkCard;
 import net.honeyflower.virtualbox.client.model.RDPConnection;
 import net.honeyflower.virtualbox.client.model.Snapshot;
@@ -49,7 +50,7 @@ public class ClientInternal {
 	
 	private VirtualBoxManager mgr;
 	private ISession session;
-	private VMEventProcessor eventProcessor;
+	private VMEventListener eventListener;
 	
 	
 	public ClientInternal(String username, String password, String url) {
@@ -78,8 +79,8 @@ public class ClientInternal {
         // recommended
         IEventListener listener = es.createListener();
         es.registerListener(listener, Arrays.asList(VBoxEventType.Any), false);
-        this.eventProcessor=new VMEventProcessor(es, listener);
-		this.eventProcessor.start();
+        this.eventListener=new VMEventListener(es, listener);
+		this.eventListener.start();
 	}
 
 	protected String importVM(String name) {
@@ -413,6 +414,10 @@ public class ClientInternal {
 
 	public boolean isConnected() {
 		return mgr.getVBox()!=null;
+	}
+	
+	protected void setEventProcessor(EventProcessor eventProcessor) {
+		eventListener.setEventProcessor(eventProcessor);
 	}
 
 }

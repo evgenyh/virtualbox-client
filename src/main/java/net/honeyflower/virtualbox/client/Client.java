@@ -2,7 +2,6 @@ package net.honeyflower.virtualbox.client;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Timer;
 import java.util.stream.Collectors;
 
 import org.virtualbox_6_0.IMachine;
@@ -10,6 +9,7 @@ import org.virtualbox_6_0.VBoxException;
 
 import lombok.extern.slf4j.Slf4j;
 import net.honeyflower.virtualbox.client.constants.SystemPropertyKey;
+import net.honeyflower.virtualbox.client.event.EventProcessor;
 import net.honeyflower.virtualbox.client.internal.ReconnectTask;
 import net.honeyflower.virtualbox.client.model.VMInfo;
 
@@ -118,6 +118,10 @@ public class Client {
 	
 	public String getProperty(SystemPropertyKey key) {
 		return client.getProperty(key);
+	}
+	
+	public void setEventProcessor(EventProcessor eventProcessor) {
+		client.setEventProcessor(eventProcessor);
 	}
 
 	public boolean isConnected() {
