@@ -21,7 +21,7 @@ class VMEventListener extends Thread {
 	private EventProcessor eventProcessor;
 	
 	public VMEventListener (IEventSource source, IEventListener listener) {
-		this(source, listener, new NoOpEventProcessor());
+		this(source, listener, null);
 	}
 	
 	public VMEventListener(IEventSource source, IEventListener listener, EventProcessor eventProcessor) {

@@ -42,15 +42,10 @@ public class ClientInternal {
 	private String password;
 	private String url;
 	
-	/*static {
-		System.setProperty(BindingProviderProperties.CONNECT_TIMEOUT, "2000");
-		System.setProperty(BindingProviderProperties.REQUEST_TIMEOUT, "5000");
-		
-	}*/
-	
 	private VirtualBoxManager mgr;
 	private ISession session;
 	private VMEventListener eventListener;
+	private EventProcessor eventProcessor;
 	
 	
 	public ClientInternal(String username, String password, String url) {
@@ -79,7 +74,7 @@ public class ClientInternal {
         // recommended
         IEventListener listener = es.createListener();
         es.registerListener(listener, Arrays.asList(VBoxEventType.Any), false);
-        this.eventListener=new VMEventListener(es, listener);
+        this.eventListener=new VMEventListener(es, listener, eventProcessor);
 		this.eventListener.start();
 	}
 
@@ -417,7 +412,9 @@ public class ClientInternal {
 	}
 	
 	protected void setEventProcessor(EventProcessor eventProcessor) {
-		eventListener.setEventProcessor(eventProcessor);
+		this.eventProcessor=eventProcessor;
+		if (eventListener!=null)
+			eventListener.setEventProcessor(eventProcessor);
 	}
 
 }
